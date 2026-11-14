@@ -15,3 +15,9 @@ def test_female_opponent_age_from_birth_date():
 
 def test_male_opponent_age_used_directly():
     assert _opponent_age("22.264202601", _to_date("20010910")) == 22.264202601
+
+
+def test_extract_rows_handles_newlines_and_semicolon():
+    from tennisage.data import _extract_rows
+    js = 'var morematchmx = [["19951030", "A"],\n          ["19970307", "B"]\n          ];'
+    assert len(_extract_rows(js)) == 2

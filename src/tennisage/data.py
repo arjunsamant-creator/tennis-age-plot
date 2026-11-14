@@ -23,7 +23,7 @@ def _download_js(url):
 
 
 def _extract_rows(js_text):
-    found = re.search(r"morematchmx\s*=\s*(\[\[.*\]\])", js_text, re.DOTALL)
+    found = re.search(r"morematchmx\s*=\s*(\[.*\])\s*;", js_text, re.DOTALL)
     if found is None:
         raise ValueError("No match data found for this player.")
     return json.loads(found.group(1))
