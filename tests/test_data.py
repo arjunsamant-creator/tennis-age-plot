@@ -21,3 +21,10 @@ def test_extract_rows_handles_newlines_and_semicolon():
     from tennisage.data import _extract_rows
     js = 'var morematchmx = [["19951030", "A"],\n          ["19970307", "B"]\n          ];'
     assert len(_extract_rows(js)) == 2
+
+
+def test_find_birth_date_reads_dob_variable():
+    from datetime import datetime
+    from tennisage.data import _find_birth_date
+    profile_js = "    var ht=175;\n    var dob=19810926;\n    var dob_approx=\"\";"
+    assert _find_birth_date(profile_js) == datetime(1981, 9, 26)

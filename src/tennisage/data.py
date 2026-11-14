@@ -5,14 +5,23 @@ from datetime import datetime
 import pandas as pd
 import requests
 
-BASE_URL = "https://www.tennisabstract.com/jsmatches/{}Career.js"
+CAREER_URL = "https://www.tennisabstract.com/jsmatches/{}Career.js"
+PROFILE_URL = "https://www.tennisabstract.com/jsmatches/{}.js"
 
 
-def _build_url(name):
+def _clean_name(name):
     name = name.strip()
     if " " in name:
         name = "".join(word.capitalize() for word in name.split())
-    return BASE_URL.format(name)
+    return name
+
+
+def _build_url(name):
+    return CAREER_URL.format(_clean_name(name))
+
+
+def _build_profile_url(name):
+    return PROFILE_URL.format(_clean_name(name))
 
 
 def _download_js(url):
@@ -41,9 +50,11 @@ def _opponent_age(value, match_date):
     return float(value)  # male files: age already given
 
 
-def _find_birth_date(js_text):
-    # TODO: depends on where the player's own birth date lives.
-    raise NotImplementedError
+def _find_birth_date(profile_js):
+    found = re.search(r"var\s+dob\s*=\s*(\d{8})", profile_js)
+    if found is None:
+        raise ValueError("Birth date not found for this player.")
+    return _to_date(found.group(1))
 
 
 def _clean_row(row, birth_date):
@@ -58,9 +69,10 @@ def _clean_row(row, birth_date):
 
 
 def get_player_matches(name):
-    js_text = _download_js(_build_url(name))
-    rows = _extract_rows(js_text)
-    birth_date = _find_birth_date(js_text)
+    career_js = _download_js(_build_url(name))
+    profile_js = _download_js(_build_profile_url(name))
+    rows = _extract_rows(career_js)
+    birth_date = _find_birth_date(profile_js)
     df = pd.DataFrame([_clean_row(row, birth_date) for row in rows])
     df["age_diff"] = df["player_age"] - df["opponent_age"]
     return df
